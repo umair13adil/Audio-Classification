@@ -21,10 +21,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import org.tensorflow.lite.Interpreter
-import java.io.BufferedReader
+import org.tensorflow.lite.nnapi.NnApiDelegate
 import java.io.FileInputStream
 import java.io.IOException
-import java.io.InputStreamReader
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.util.*
@@ -61,6 +60,8 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
     private var backgroundThread: HandlerThread? = null
     private var backgroundHandler: Handler? = null
 
+    /** Options for configuring the Interpreter.  */
+    private val tfliteOptions = Interpreter.Options()
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,14 +84,17 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
                 MINIMUM_COUNT,
                 MINIMUM_TIME_BETWEEN_SAMPLES_MS)
         val actualModelFilename = MODEL_FILENAME.split("file:///android_asset/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]
+
         tfLite = try {
-            Interpreter(loadModelFile(assets, actualModelFilename))
+            tfliteOptions.setNumThreads(4)
+
+            Interpreter(loadModelFile(assets, actualModelFilename), tfliteOptions)
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
 
         //TODO: Verify
-        tfLite?.resizeInput(0, intArrayOf(RECORDING_LENGTH, 1))
+        //tfLite?.resizeInput(0, intArrayOf(RECORDING_LENGTH, 1))
 
         // Start the recording and recognition threads.
         requestMicrophonePermission()
@@ -275,7 +279,7 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
             for (i in 0 until RECORDING_LENGTH) {
                 floatInputBuffer[i][0] = inputBuffer[i] / 32767.0f
             }
-            val inputArray = arrayOf<Any>(floatInputBuffer, sampleRateList)
+            val inputArray = arrayOf<Any>(floatInputBuffer)
             val outputMap: MutableMap<Int, Any> = HashMap()
             outputMap[0] = outputScores
 

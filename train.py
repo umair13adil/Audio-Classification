@@ -94,16 +94,14 @@ def train(args):
                          mode='auto', save_freq='epoch', verbose=1)
     csv_logger = CSVLogger(csv_path, append=False)
     model.fit(tg, validation_data=vg,
-              epochs=10, verbose=1,
+              epochs=30, verbose=1,
               callbacks=[csv_logger, cp])
     print(model.summary())
 
     # Create a converter
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     converter.allow_custom_ops = True
-
-    # Set quantize to true
-    converter.post_training_quantize = True
+    converter.experimental_new_converter = True
 
     # Convert the model
     tflite_model = converter.convert()
