@@ -42,6 +42,7 @@ def make_prediction(args):
             batch.append(sample)
         X_batch = np.array(batch)
         y_pred = model.predict(X_batch)
+
         y_mean = np.mean(y_pred, axis=0)
         y_pred = np.argmax(y_mean)
         results.append(y_mean)

@@ -43,7 +43,7 @@ class DataGenerator(tf.keras.utils.Sequence):
             # print('Classes: {}'.format(self.n_classes))
             rate, wav = wavfile.read(path)
             X[i,] = wav.reshape(1, -1)
-            Y[i,] = to_categorical(label-1, num_classes=self.n_classes)
+            Y[i,] = to_categorical(label - 1, num_classes=self.n_classes)
 
         return X, Y
 
@@ -94,8 +94,23 @@ def train(args):
                          mode='auto', save_freq='epoch', verbose=1)
     csv_logger = CSVLogger(csv_path, append=False)
     model.fit(tg, validation_data=vg,
-              epochs=60, verbose=1,
+              epochs=10, verbose=1,
               callbacks=[csv_logger, cp])
+    print(model.summary())
+
+    # Create a converter
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    converter.allow_custom_ops = True
+
+    # Set quantize to true
+    converter.post_training_quantize = True
+
+    # Convert the model
+    tflite_model = converter.convert()
+
+    # Create the tflite model file
+    tflite_model_name = "android/app/src/main/assets/converted_model.tflite"
+    open(tflite_model_name, "wb").write(tflite_model)
 
 
 if __name__ == '__main__':

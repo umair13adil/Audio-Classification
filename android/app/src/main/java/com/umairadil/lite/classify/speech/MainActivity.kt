@@ -15,7 +15,9 @@ import android.widget.CompoundButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import org.tensorflow.lite.Interpreter
@@ -29,7 +31,7 @@ import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
 class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
-    // Working variables.
+
     var recordingBuffer = ShortArray(RECORDING_LENGTH)
     var recordingOffset = 0
     var shouldContinue = true
@@ -58,6 +60,9 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
     private var selectedTextView: TextView? = null
     private var backgroundThread: HandlerThread? = null
     private var backgroundHandler: Handler? = null
+
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         // Set up the UI.
         super.onCreate(savedInstanceState)
@@ -65,6 +70,9 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
 
         displayedLabels.add("1")
         displayedLabels.add("2")
+
+        labels.add("1")
+        labels.add("2")
 
         // Set up an object to smooth recognition results to increase accuracy.
         recognizeCommands = RecognizeCommands(
@@ -80,13 +88,13 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
-        tfLite!!.resizeInput(0, intArrayOf(RECORDING_LENGTH, 1))
-        //tfLite.resizeInput(1, new int[] {1});
+
+        //TODO: Verify
+        tfLite?.resizeInput(0, intArrayOf(RECORDING_LENGTH, 1))
 
         // Start the recording and recognition threads.
         requestMicrophonePermission()
-        //startRecording()
-        //startRecognition()
+
         sampleRateTextView = findViewById(R.id.sample_rate)
         inferenceTimeTextView = findViewById(R.id.inference_info)
         bottomSheetLayout = findViewById(R.id.bottom_sheet_layout)
@@ -135,15 +143,19 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
         sampleRateTextView?.text = "$SAMPLE_RATE Hz"
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     private fun requestMicrophonePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_RECORD_AUDIO)
+        } else {
+            startRecording()
+            startRecognition()
         }
     }
 
     override fun onRequestPermissionsResult(
             requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (requestCode == REQUEST_RECORD_AUDIO && grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == REQUEST_RECORD_AUDIO && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             startRecording()
             startRecognition()
         }
