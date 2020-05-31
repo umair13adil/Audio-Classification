@@ -1,17 +1,16 @@
+import argparse
+import os
+from glob import glob
+
+import numpy as np
 import tensorflow as tf
+from scipy.io import wavfile
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.callbacks import CSVLogger, ModelCheckpoint
 from tensorflow.keras.utils import to_categorical
-import os
-from scipy.io import wavfile
-import pandas as pd
-import numpy as np
-from sklearn.utils.class_weight import compute_class_weight
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
+
 from models import Conv1D, Conv2D, LSTM
-from tqdm import tqdm
-from glob import glob
-import argparse
 
 
 class DataGenerator(tf.keras.utils.Sequence):
@@ -40,11 +39,11 @@ class DataGenerator(tf.keras.utils.Sequence):
         Y = np.empty((self.batch_size, self.n_classes), dtype=np.float32)
 
         for i, (path, label) in enumerate(zip(wav_paths, labels)):
-            print('Label: {}'.format(label))
-            print('Classes: {}'.format(self.n_classes))
+            # print('Label: {}'.format(label))
+            # print('Classes: {}'.format(self.n_classes))
             rate, wav = wavfile.read(path)
             X[i,] = wav.reshape(1, -1)
-            Y[i,] = to_categorical(label, num_classes=self.n_classes)
+            Y[i,] = to_categorical(0, num_classes=self.n_classes)
 
         return X, Y
 
@@ -82,8 +81,8 @@ def train(args):
 
     wav_train, wav_val, label_train, label_val = train_test_split(wav_paths,
                                                                   labels,
-                                                                  test_size=0.1,
-                                                                  random_state=0)
+                                                                  test_size=0.5,
+                                                                  random_state=1)
     tg = DataGenerator(wav_train, label_train, sr, dt,
                        len(set(label_train)), batch_size=batch_size)
     vg = DataGenerator(wav_val, label_val, sr, dt,
@@ -95,7 +94,7 @@ def train(args):
                          mode='auto', save_freq='epoch', verbose=1)
     csv_logger = CSVLogger(csv_path, append=False)
     model.fit(tg, validation_data=vg,
-              epochs=30, verbose=1,
+              epochs=60, verbose=1,
               callbacks=[csv_logger, cp])
 
 
