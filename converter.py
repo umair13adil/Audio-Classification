@@ -9,10 +9,11 @@ def convert(args):
     model = load_model(args.model_fn,
                        custom_objects={'Melspectrogram': Melspectrogram,
                                        'Normalization2D': Normalization2D})
+    print(model.summary())
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     converter.allow_custom_ops=True
     tflite_model = converter.convert()
-    open("models/converted_model.tflite", "wb").write(tflite_model)
+    open("android/app/src/main/assets/converted_model.tflite", "wb").write(tflite_model)
 
 
 if __name__ == '__main__':
