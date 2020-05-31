@@ -40,6 +40,8 @@ class DataGenerator(tf.keras.utils.Sequence):
         Y = np.empty((self.batch_size, self.n_classes), dtype=np.float32)
 
         for i, (path, label) in enumerate(zip(wav_paths, labels)):
+            print('Label: {}'.format(label))
+            print('Classes: {}'.format(self.n_classes))
             rate, wav = wavfile.read(path)
             X[i,] = wav.reshape(1, -1)
             Y[i,] = to_categorical(label, num_classes=self.n_classes)
