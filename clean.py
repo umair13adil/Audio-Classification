@@ -115,14 +115,14 @@ if __name__ == '__main__':
                         help='directory to put audio files split by delta_time')
     parser.add_argument('--delta_time', '-dt', type=float, default=1.0,
                         help='time in seconds to sample audio')
-    parser.add_argument('--sr', type=int, default=16000,
+    parser.add_argument('--sr', type=int, default=128000,
                         help='rate to downsample audio')
 
-    parser.add_argument('--fn', type=str, default='3a3d0279',
+    parser.add_argument('--fn', type=str, default='right1.wav',
                         help='file to plot over time to check magnitude')
     parser.add_argument('--threshold', type=str, default=20,
                         help='threshold magnitude for np.int16 dtype')
     args, _ = parser.parse_known_args()
 
-    test_threshold(args)
-    #split_wavs(args)
+    #test_threshold(args)
+    split_wavs(args)

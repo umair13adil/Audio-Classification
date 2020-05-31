@@ -26,19 +26,17 @@ class DataGenerator(tf.keras.utils.Sequence):
         self.shuffle = True
         self.on_epoch_end()
 
-
     def __len__(self):
         return int(np.floor(len(self.wav_paths) / self.batch_size))
 
-
     def __getitem__(self, index):
-        indexes = self.indexes[index*self.batch_size:(index+1)*self.batch_size]
+        indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
 
         wav_paths = [self.wav_paths[k] for k in indexes]
         labels = [self.labels[k] for k in indexes]
 
         # generate a batch of time data
-        X = np.empty((self.batch_size, 1, int(self.sr*self.dt)), dtype=np.int16)
+        X = np.empty((self.batch_size, 1, int(self.sr * self.dt)), dtype=np.int16)
         Y = np.empty((self.batch_size, self.n_classes), dtype=np.float32)
 
         for i, (path, label) in enumerate(zip(wav_paths, labels)):
@@ -48,7 +46,6 @@ class DataGenerator(tf.keras.utils.Sequence):
 
         return X, Y
 
-
     def on_epoch_end(self):
         self.indexes = np.arange(len(self.wav_paths))
         if self.shuffle:
@@ -57,15 +54,16 @@ class DataGenerator(tf.keras.utils.Sequence):
 
 def train(args):
     src_root = args.src_root
+
     sr = args.sample_rate
     dt = args.delta_time
     batch_size = args.batch_size
     model_type = args.model_type
-    params = {'SR':sr,
-              'DT':dt}
-    models = {'conv1d':Conv1D(**params),
-              'conv2d':Conv2D(**params),
-              'lstm':  LSTM(**params)}
+    params = {'SR': sr,
+              'DT': dt}
+    models = {'conv1d': Conv1D(**params),
+              'conv2d': Conv2D(**params),
+              'lstm': LSTM(**params)}
     assert model_type in models.keys(), '{} not an available model'.format(model_type)
     csv_path = os.path.join('logs', '{}_history.csv'.format(model_type))
 
@@ -76,6 +74,9 @@ def train(args):
     le.fit(classes)
     labels = [os.path.split(x)[0].split('/')[-1] for x in wav_paths]
     labels = le.transform(labels)
+
+    print(wav_paths)
+    print(labels)
 
     wav_train, wav_val, label_train, label_val = train_test_split(wav_paths,
                                                                   labels,
@@ -97,7 +98,6 @@ def train(args):
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser(description='Audio Classification Training')
     parser.add_argument('--model_type', type=str, default='lstm',
                         help='model to run. i.e. conv1d, conv2d, lstm')
