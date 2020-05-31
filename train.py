@@ -43,7 +43,7 @@ class DataGenerator(tf.keras.utils.Sequence):
             # print('Classes: {}'.format(self.n_classes))
             rate, wav = wavfile.read(path)
             X[i,] = wav.reshape(1, -1)
-            Y[i,] = to_categorical(0, num_classes=self.n_classes)
+            Y[i,] = to_categorical(label-1, num_classes=self.n_classes)
 
         return X, Y
 

@@ -120,9 +120,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--fn', type=str, default='right1.wav',
                         help='file to plot over time to check magnitude')
-    parser.add_argument('--threshold', type=str, default=20,
+    parser.add_argument('--threshold', type=str, default=30,
                         help='threshold magnitude for np.int16 dtype')
     args, _ = parser.parse_known_args()
 
-    #test_threshold(args)
+    test_threshold(args)
     split_wavs(args)
