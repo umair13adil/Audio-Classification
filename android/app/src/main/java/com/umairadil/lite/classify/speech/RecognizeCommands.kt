@@ -11,6 +11,9 @@ class RecognizeCommands(
         inSuppressionMS: Int,
         inMinimumCount: Int,
         inMinimumTimeBetweenSamplesMS: Long) {
+
+    private val TAG = "RecognizeCommands"
+
     // Configuration settings.
     private var labels: List<String> = ArrayList()
     private val averageWindowDurationMs: Long
@@ -43,6 +46,20 @@ class RecognizeCommands(
     }
 
     fun processLatestResults(currentResults: FloatArray, currentTimeMS: Long): RecognitionResult {
+        Log.i(TAG, "------->> >processLatestResults: ${currentResults.size}")
+        currentResults.forEachIndexed { index, fl ->
+            when(index){
+                0->{
+                    val score = Math.round(fl * 100).toString() + "%"
+                    Log.i(TAG, "Casky Left , Score: $score")
+                }
+                1 ->{
+                    val score = Math.round(fl * 100).toString() + "%"
+                    Log.i(TAG, "Casky Right , Score: $score")
+                }
+            }
+        }
+        Log.i(TAG, "<<<<-------")
         if (currentResults.size != labelsCount) {
             throw RuntimeException(
                     "The results for recognition should contain "

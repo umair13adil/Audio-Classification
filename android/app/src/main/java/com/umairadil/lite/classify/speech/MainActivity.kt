@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
+    private val TAG = "MainActivity"
     var recordingBuffer = ShortArray(RECORDING_LENGTH)
     var recordingOffset = 0
     var shouldContinue = true
@@ -69,11 +70,15 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        displayedLabels.add("1")
-        displayedLabels.add("2")
+        //displayedLabels.add("_silence_")
+        //displayedLabels.add("_unknown_")
+        displayedLabels.add("Caskey Left")
+        displayedLabels.add("Caskey Right")
 
-        labels.add("1")
-        labels.add("2")
+        //labels.add("_silence_")
+        //labels.add("_unknown_")
+        labels.add("Caskey Left")
+        labels.add("Caskey Right")
 
         // Set up an object to smooth recognition results to increase accuracy.
         recognizeCommands = RecognizeCommands(
@@ -295,15 +300,17 @@ class MainActivity : Activity(), View.OnClickListener, CompoundButton.OnCheckedC
 
                 // If we do have a new command, highlight the right list entry.
                 if (!result.foundCommand.startsWith("_") && result.isNewCommand) {
+                    val score = Math.round(result.score * 100).toString() + "%"
+                    Log.i(TAG, "Found Command: ${result.foundCommand} , Score: $score")
                     var labelIndex = -1
                     for (i in labels.indices) {
                         if (labels[i] == result.foundCommand) {
                             labelIndex = i
                         }
                     }
-                    when (labelIndex - 2) {
-                        1 -> selectedTextView = leftTextView
-                        2 -> selectedTextView = rightTextView
+                    when (labelIndex) {
+                        0 -> selectedTextView = leftTextView
+                        1 -> selectedTextView = rightTextView
                     }
                     if (selectedTextView != null) {
                         selectedTextView!!.setBackgroundResource(R.drawable.round_corner_text_bg_selected)
